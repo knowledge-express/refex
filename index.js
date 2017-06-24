@@ -1,4 +1,5 @@
 const text = require('./text');
+const { fromString: parseReference } = require('./reference');
 
 const regexes = {
   sentence: () => '\\.\\w*(\n*?)(\\w*\\.)',
@@ -38,7 +39,7 @@ function findClaims(text) {
   // const regex = /(([^.]*\s*){1})(.*\[([0-9]+,?)*\]([^:]|\.))/g;
   // const regex = /[^.]*\s*.*\[([0-9]+,?)*\].*\./g;
   // const regex = /(([A-Z].*)|\n.*)\[([0-9]+,?)*\](\.|(([^:]|\n)[^.]*))/g;
-  const regex = /(([^.]|et al\.)+?)\s*\[([0-9]+,?)*\](\.|(([^:]|\n)([^.]|et al\.)*\.))/g;
+  const regex = /(([^.]|et al\.)+?)\s*\[([0-9]+,?)*\](\.|(([^:]|\s)([^.]|et al\.)*\.))/g;
 
   const match = text.match(regex) || [];
 
@@ -50,9 +51,14 @@ function findClaims(text) {
   return match;
 }
 
+function trim(text) {
+  return text.replace(/\s+/g, ' ');
+}
+
 function refex(text) {
-  const references = findReferences(text);
-  const claims = findClaims(text);
+  const trimmed = trim(text);
+  const references = findReferences(trimmed).map(parseReference);
+  const claims = findClaims(trimmed);
 
   return {
     references,
